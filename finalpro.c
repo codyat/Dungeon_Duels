@@ -8,15 +8,16 @@
 //--------Find GCD function --------------------------------------------------
 unsigned long int findGCD(unsigned long int a, unsigned long int b)
 {
-   unsigned long int c;
-   while(1){
-       c = a%b;
-       if(c==0){return b;}
-       a = b;
-
-b = c;
-   }
-   return 0;
+  unsigned long int c;
+  while(1)
+  {
+    c = a%b;
+    if(c==0)
+      return b;
+    a = b;
+    b = c;
+  }
+  return 0;
 }
 //--------End find GCD function ----------------------------------------------
 
@@ -263,31 +264,31 @@ void light_up(unsigned char r, unsigned char c)
 void show_map()
 {
   for(signed char  j = 0; j < 8; j++)
-    for(signed char  i = 0; i < 8; i++)
+  for(signed char  i = 0; i < 8; i++)
+  {
+    if(user.pos_x - 4 + i < 0 || user.pos_y - 3 + j < 0 || user.pos_x - 4 + i > MAP_SIZE - 1 || user.pos_y - 3 + j > MAP_SIZE - 1)
+      my_view[i][j] = 1;
+    else if(map[user.pos_x - 4 + i][user.pos_y - 3 + j] == 1)
+      my_view[i][j] = 1;
+    else
+      my_view[i][j] = 0;
+    for(unsigned char k = enemy_index; k < 6; k++)
+      if(((user.pos_x - 4 + i) == enemies[k].pos_x) && ((user.pos_y - 3 + j) == enemies[k].pos_y))
+        my_view[i][j] = 1;
+    for(unsigned char k = 0; k < 5; k++)
     {
-      if(user.pos_x - 4 + i < 0 || user.pos_y - 3 + j < 0 || user.pos_x - 4 + i > MAP_SIZE - 1 || user.pos_y - 3 + j > MAP_SIZE - 1)
-        my_view[i][j] = 1;
-      else if(map[user.pos_x - 4 + i][user.pos_y - 3 + j] == 1)
-        my_view[i][j] = 1;
+      if(k < enemy_index) map[doors[k].x][doors[k].y] = 0;
       else
-        my_view[i][j] = 0;
-      for(unsigned char k = enemy_index; k < 6; k++)
-        if(((user.pos_x - 4 + i) == enemies[k].pos_x) && ((user.pos_y - 3 + j) == enemies[k].pos_y))
-          my_view[i][j] = 1;
-      for(unsigned char k = 0; k < 5; k++)
       {
-        if(k < enemy_index) map[doors[k].x][doors[k].y] = 0;
-        else
-        {
-          if(((user.pos_x - 4 + i) == doors[k].x) && ((user.pos_y - 3 + j) == doors[k].y))
-            my_view[i][j] = 1;
-        }
+        if(((user.pos_x - 4 + i) == doors[k].x) && ((user.pos_y - 3 + j) == doors[k].y))
+          my_view[i][j] = 1;
       }
     }
-    for(unsigned char  j = 0; j < 8; j++)
-      for(unsigned char  i = 0; i < 8; i++)
-        if(my_view[i][j] > 0)
-          light_up (i+1,j+1);
+  }
+  for(unsigned char  j = 0; j < 8; j++)
+    for(unsigned char  i = 0; i < 8; i++)
+      if(my_view[i][j] > 0)
+        light_up (i+1,j+1);
   light_up(5, 4);
 }
 
@@ -375,105 +376,106 @@ void enemys_turn()
 }
 
 void LCD_WriteCmdStart(unsigned char cmd) {
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_RS, 0);
-   *LCD_Data = cmd;
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 1);
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_RS, 0);
+  *LCD_Data = cmd;
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 1);
 }
 void LCD_WriteCmdEnd() {
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 0);
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 0);
 }
 void LCD_WriteDataStart(unsigned char Data) {
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_RS,1);
-   *LCD_Data = Data;
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 1);
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_RS,1);
+  *LCD_Data = Data;
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 1);
 }
 void LCD_WriteDataEnd() {
-   *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 0);
+  *LCD_Ctrl = SetBit(*LCD_Ctrl,LCD_E, 0);
 }
 void LCD_Cursor(unsigned char column ) {
-   if ( column < 16) LCD_WriteCmdStart(0x80+column);
-   else if(column >= 32) LCD_WriteCmdStart(0x80+column-32);
-   else LCD_WriteCmdStart(0xB0+column); // IEEE change this value to 0xBF+column
+  if ( column < 16) LCD_WriteCmdStart(0x80+column);
+  else if(column >= 32) LCD_WriteCmdStart(0x80+column-32);
+  else LCD_WriteCmdStart(0xB0+column); // IEEE change this value to 0xBF+column
 }
 
 enum LI_States { LI_Init1, LI_Init2, LI_Init3, LI_Init4, LI_Init5, LI_Init6,
-   LI_WaitDisplayString, LI_Clr, LI_PositionCursor, LI_DisplayChar, LI_WaitGo0 } LI_State;
+                 LI_WaitDisplayString, LI_Clr, LI_PositionCursor, 
+                 LI_DisplayChar, LI_WaitGo0 } LI_State;
 
 void LI_Tick() {
-   static unsigned char i;
-   switch(LI_State) { // Transitions
-       case -1:
-           LI_State = LI_Init1;
-           break;
-       case LI_Init1:
-           LI_State = LI_Init2;
-           i=0;
-           break;
-       case LI_Init2:
-           if (i<10)  // Wait 100 ms after power up
-               LI_State = LI_Init2;
-           else
-               LI_State = LI_Init3;
-           break;
-       case LI_Init3:
-           LI_State = LI_Init4;
-           LCD_WriteCmdEnd();
-           break;
-       case LI_Init4:
-           LI_State = LI_Init5;
-           LCD_WriteCmdEnd();
-           break;
-       case LI_Init5:
-           LI_State = LI_Init6;
-           LCD_WriteCmdEnd();
-           break;
-       case LI_Init6:
-           LI_State = LI_WaitDisplayString;
-           LCD_WriteCmdEnd();
-           break;
-       //////////////////////////////////////////////
-       case LI_WaitDisplayString:
-           if (!LCD_go_g) {
-               LI_State = LI_WaitDisplayString;
-           }
-           else if (LCD_go_g) {
-            LCD_rdy_g = 0;
-               LI_State = LI_Clr;
-           }
-           break;
-       case LI_Clr:
-           LI_State = LI_PositionCursor;
-           LCD_WriteCmdEnd();
-           i=0;
-           break;
-       case LI_PositionCursor:
-           LI_State = LI_DisplayChar;
-           LCD_WriteCmdEnd();
-           break;
-       case LI_DisplayChar:
-           if (i<31) {
-               LI_State = LI_PositionCursor;
-               LCD_WriteDataEnd();
-           i++;
-           }
-           else {
-               LI_State = LI_WaitGo0;
-               LCD_WriteDataEnd();
-           }
-           break;
-       case LI_WaitGo0:
-           if (!LCD_go_g) {
-               LI_State = LI_WaitDisplayString;
-           }
-           else if (LCD_go_g) {
-               LI_State = LI_WaitGo0;
-           }
-           break;
-       default:
-           LI_State = LI_Init1;
-       } // Transitions
-
-   switch(LI_State) { // State actions
+  static unsigned char i;
+  switch(LI_State) { // Transitions
+    case -1:
+      LI_State = LI_Init1;
+      break;
+    case LI_Init1:
+      LI_State = LI_Init2;
+      i=0;
+      break;
+    case LI_Init2:
+      if (i<10) // Wait 100 ms after power up
+        LI_State = LI_Init2;
+      else
+        LI_State = LI_Init3;
+      break;
+    case LI_Init3:
+      LI_State = LI_Init4;
+      LCD_WriteCmdEnd();
+      break;
+    case LI_Init4:
+      LI_State = LI_Init5;
+      LCD_WriteCmdEnd();
+      break;
+    case LI_Init5:
+      LI_State = LI_Init6;
+      LCD_WriteCmdEnd();
+      break;
+    case LI_Init6:
+      LI_State = LI_WaitDisplayString;
+      LCD_WriteCmdEnd();
+      break;
+    //////////////////////////////////////////////
+    case LI_WaitDisplayString:
+      if (!LCD_go_g) {
+        LI_State = LI_WaitDisplayString;
+      }
+      else if (LCD_go_g) {
+        LCD_rdy_g = 0;
+        LI_State = LI_Clr;
+      }
+      break;
+    case LI_Clr:
+      LI_State = LI_PositionCursor;
+      LCD_WriteCmdEnd();
+      i=0;
+      break;
+    case LI_PositionCursor:
+      LI_State = LI_DisplayChar;
+      LCD_WriteCmdEnd();
+      break;
+    case LI_DisplayChar:
+      if (i<31) {
+        LI_State = LI_PositionCursor;
+        LCD_WriteDataEnd();
+        i++;
+      }
+      else {
+        LI_State = LI_WaitGo0;
+        LCD_WriteDataEnd();
+      }
+      break;
+    case LI_WaitGo0:
+      if (!LCD_go_g) {
+        LI_State = LI_WaitDisplayString;
+      }
+      else if (LCD_go_g) {
+        LI_State = LI_WaitGo0;
+      }
+      break;
+    default:
+      LI_State = LI_Init1;
+  } // Transitions
+  
+  switch(LI_State) { // State actions
        case LI_Init1:
         LCD_rdy_g = 0;
            break;
